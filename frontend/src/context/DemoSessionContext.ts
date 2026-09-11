@@ -19,8 +19,15 @@ export type DemoSessionValue = {
   bids: LiveBid[]
   tokens: TokenHolding[]
   settlements: Settlement[]
+  /** Backward-compatible alias for bondIssuer — the issuer for the selected round's bond. */
   issuer: Address | null
+  /** Clearing Bell platform admin address. */
+  platformAdmin: Address | null
   isIssuer: boolean
+  /** True if the connected wallet is the Clearing Bell platform admin. */
+  isPlatformAdmin: boolean
+  /** The registered issuer wallet for the currently selected round's bond token (null if no round). */
+  bondIssuer: Address | null
   paused: boolean
   eligibility: boolean | null
   eligibilityError: string | null

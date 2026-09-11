@@ -19,7 +19,7 @@ export function Issuer({ onNavigate }: { onNavigate: (view: View) => void }) {
   const [minutes, setMinutes] = useState('60')
   const [focusId, setFocusId] = useState('')
   const [filter, setFilter] = useState('all')
-  const { config, account, issuer, isIssuer, paused, rounds, selectedRound, selectRound, openRound, setPaused, pendingTx, openIdentityDialog, blockNumber, roundsTruncated, chainTimestamp } = useDemoSession()
+  const { config, account, issuer, isIssuer, isPlatformAdmin, paused, rounds, selectedRound, selectRound, openRound, setPaused, pendingTx, openIdentityDialog, blockNumber, roundsTruncated, chainTimestamp } = useDemoSession()
   const latest = [...rounds].sort((a, b) => BigInt(a.id) < BigInt(b.id) ? 1 : BigInt(a.id) > BigInt(b.id) ? -1 : 0)
   const current = latest.find(round => round.id === focusId) || latest.find(round => round.phase === 'open') || latest[0] || null
   const shownRounds = latest.filter(round => filter === 'all' || round.phase === filter)
@@ -59,11 +59,11 @@ export function Issuer({ onNavigate }: { onNavigate: (view: View) => void }) {
 
       <ChainState>
         <div className="issuer-authority-bar">
-          <span><ShieldCheck size={15} aria-hidden="true" /><b>{isIssuer ? 'Issuer access' : 'Read-only access'}</b></span>
+          <span><ShieldCheck size={15} aria-hidden="true" /><b>{isPlatformAdmin ? 'Platform admin' : isIssuer ? 'Bond issuer access' : 'Read-only access'}</b></span>
           <span className={`issuer-trading-state ${paused ? 'is-paused' : ''}`}><i aria-hidden="true" />Trading {paused ? 'paused' : 'enabled'}</span>
           <span className="issuer-network-record">{config?.network}<i aria-hidden="true">/</i>Chain {config?.chainId}</span>
         </div>
-        {!isIssuer && <p className="issuer-access-note">All contract records are visible. Only the authorized issuer can open rounds or pause trading.</p>}
+        {!isIssuer && !isPlatformAdmin && <p className="issuer-access-note">All contract records are visible. Only a registered bond issuer can open rounds. The platform admin can register new issuers.</p>}
         {paused && <div className="issuer-pause-notice" role="status">New rounds, new orders and clearing are paused. Existing deadlines continue to run.</div>}
 
         <dl className="issuer-summary-strip">

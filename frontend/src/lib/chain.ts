@@ -26,7 +26,10 @@ export async function readToken(client: AuctionPublicClient, token: Address): Pr
 export type ChainSnapshot = {
   rounds: LiveRound[]
   selectedRound: LiveRound | null
-  issuer: Address
+  /** Clearing Bell platform admin address (controls issuer registration, global pause). */
+  platformAdmin: Address
+  /** Registered issuer for the currently selected round's bond token (may be null if no round selected). */
+  bondIssuer: Address | null
   gate: Address
   paused: boolean
   eligibility: boolean | null
@@ -47,9 +50,9 @@ export async function readSnapshot(client: AuctionPublicClient, config: Deployme
   if (chainId !== config.chainId) throw new Error(`RPC returned chain ${chainId}; expected ${config.chainId}. Correct the deployment configuration.`)
   const code = await client.getCode({ address: engine })
   if (!code || code === '0x') throw new Error('No auction engine exists at the configured address. Redeploy the local stack or correct the contract address.')
-  const [nextRoundId, issuer, gate, paused, block] = await Promise.all([
+  const [nextRoundId, platformAdmin, gate, paused, block] = await Promise.all([
     client.readContract({ address: engine, abi: auctionAbi, functionName: 'nextRoundId' }),
-    client.readContract({ address: engine, abi: auctionAbi, functionName: 'issuer' }),
+    client.readContract({ address: engine, abi: auctionAbi, functionName: 'platformAdmin' }),
     client.readContract({ address: engine, abi: auctionAbi, functionName: 'complianceGate' }),
     client.readContract({ address: engine, abi: auctionAbi, functionName: 'paused' }),
     client.getBlock(),
@@ -86,6 +89,14 @@ export async function readSnapshot(client: AuctionPublicClient, config: Deployme
   })
   rounds.reverse()
   const selectedRound = rounds.find((round) => round.id === selectedId) || rounds.find((round) => round.phase === 'open') || rounds[0] || null
+  // Fetch the registered issuer for the selected round's bond (null if no round)
+  let bondIssuer: Address | null = null
+  if (selectedRound) {
+    try {
+      const raw = await client.readContract({ address: engine, abi: auctionAbi, functionName: 'bondIssuers', args: [selectedRound.bondToken] })
+      bondIssuer = getAddress(raw)
+    } catch { /* bond not registered yet — bondIssuer stays null */ }
+  }
   let eligibility: boolean | null = null
   let eligibilityError: string | null = null
   if (account && selectedRound) {
@@ -137,7 +148,7 @@ export async function readSnapshot(client: AuctionPublicClient, config: Deployme
   }
   const localAccounts = await localAccountsFor(config).catch(() => [] as Address[])
   return {
-    rounds, selectedRound, issuer: getAddress(issuer), gate: getAddress(gate), paused, eligibility, eligibilityError,
+    rounds, selectedRound, platformAdmin: getAddress(platformAdmin), bondIssuer, gate: getAddress(gate), paused, eligibility, eligibilityError,
     tokens, settlements, historyError, historyFromBlock, roundsTruncated: firstId > 1n, localAccounts: localAccounts.map((item) => getAddress(item)),
     blockNumber: block.number.toString(), chainTimestamp: Number(block.timestamp),
   }

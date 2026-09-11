@@ -40,6 +40,10 @@ contract AuctionEngineTest is Test {
 
         engine = new AuctionEngine(address(gate), ISSUER);
 
+        // Register ISSUER as the bond issuer for the bond token (Option C multi-issuer).
+        vm.prank(ISSUER);
+        engine.registerBondIssuer(address(bond), ISSUER);
+
         // KYC everyone
         registry.grant(ISSUER);
         registry.grant(ALICE);
@@ -237,13 +241,13 @@ contract AuctionEngineTest is Test {
 
     function test_RevertWhen_NonIssuerOpensRound() public {
         vm.prank(ALICE);
-        vm.expectRevert(AuctionEngine.NotIssuer.selector);
+        vm.expectRevert(abi.encodeWithSelector(AuctionEngine.NotBondIssuer.selector, address(bond)));
         engine.openRound(address(bond), address(usdc), 1 hours);
     }
 
     function test_RevertWhen_NonIssuerPauses() public {
         vm.prank(ALICE);
-        vm.expectRevert(AuctionEngine.NotIssuer.selector);
+        vm.expectRevert(AuctionEngine.NotPlatformAdmin.selector);
         engine.pause();
     }
 
