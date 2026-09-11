@@ -112,6 +112,31 @@ export function Issuer({ onNavigate }: { onNavigate: (view: View) => void }) {
           </dl></section>
           <section className="issuer-record-panel" aria-labelledby="issuer-deployment-title"><header className="issuer-record-heading"><h2 id="issuer-deployment-title">Deployment record</h2><Code2 size={19} aria-hidden="true" /></header>{config && <dl className="issuer-record-list">{Object.entries(config.contracts).filter((entry): entry is [string, `0x${string}`] => Boolean(entry[1])).map(([name, address]) => <div key={name}><dt>{name.replace(/([A-Z])/g, ' $1')}</dt><dd><AddressLink value={address} /></dd></div>)}</dl>}<a className="issuer-source-link" href="https://github.com/AmrendraTheCoder/Clearing-Bell/tree/main/contracts/src" target="_blank" rel="noreferrer">Contract source <ExternalLink size={14} /></a></section>
         </div>
+
+        <section className="issuer-record-panel" style={{ marginTop: '24px' }} aria-labelledby="issuer-flow-title">
+          <header className="issuer-record-heading">
+            <h2 id="issuer-flow-title">Multi-Issuer Lifecycle</h2>
+          </header>
+          <p style={{ marginTop: 0, marginBottom: '16px' }}>How companies list and manage bonds on the platform.</p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+            <div>
+              <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--issuer-text)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Backend Admin Setup (One-Time)</h3>
+              <ul style={{ fontSize: '13px', color: 'var(--issuer-muted)', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', margin: 0 }}>
+                <li><b>1. Get Whitelisted (Platform Admin):</b> Admin calls <code>AuctionEngine.registerBondIssuer()</code>.</li>
+                <li><b>2. Connect Compliance (Company):</b> Company links ATS registry via <code>ComplianceGate.registerRegistry()</code>.</li>
+                <li><b>3. Configure Bond (Company):</b> Company registers engine and token via <code>BondConfig.configure()</code>.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--issuer-text)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Frontend Dashboard (Daily Operations)</h3>
+              <ul style={{ fontSize: '13px', color: 'var(--issuer-muted)', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', margin: 0 }}>
+                <li><b>4. Open a Round:</b> Click "Open a round" above to start a live auction for your bond.</li>
+                <li><b>5. Close and Clear:</b> Click "Close Round" to automatically calculate the uniform clearing price and settle trades.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
       </ChainState>
     </div>
 

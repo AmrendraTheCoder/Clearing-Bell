@@ -1,6 +1,6 @@
 import type { View } from '../types.ts'
 
-export const homeOverview = 'Clearing Bell is a tokenized bond auction application built for Hedera. Eligible wallets place public limit orders in a shared auction window, and matched trades settle at one clearing price.'
+export const homeOverview = 'Clearing Bell is a multi-issuer tokenized bond auction platform built for Hedera. Any authorized company can list their bonds, enforce their own KYC rules, and run their own auctions. Eligible wallets place public limit orders in a shared auction window, and matched trades settle at one clearing price.'
 
 export const homeQuestions = [
   { question: 'What is Clearing Bell?', answer: 'Clearing Bell is a batch-auction application for tokenized bonds, built for Hedera. It connects a public order book, token eligibility checks, an investor portfolio, and issuer controls.' },

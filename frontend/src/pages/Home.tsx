@@ -9,6 +9,7 @@ import type { View } from '../types'
 import { amount } from '../utils/format'
 
 const principles = [
+  { title: 'Any company, any bond.', text: 'The platform is multi-issuer. Any authorized company can list their bond, connect their own KYC registry, and run their own auctions without giving up control.' },
   { title: 'One market. One price.', text: 'Matched buyers and sellers trade at the same clearing price.' },
   { title: 'Eligibility is part of the trade.', text: 'Wallet permissions are checked before orders and settlement.' },
   { title: 'Assets and payment, together.', text: 'Bond and cash-token transfers execute in one transaction.' },
@@ -66,7 +67,11 @@ export function Home({ onNavigate }: { onNavigate: (view: View) => void }) {
 
     <section className="landing-process" id="auction-process" aria-labelledby="process-title">
       <div className="landing-section-head"><span className="landing-micro">FROM INTENT TO OWNERSHIP</span><span className="landing-section-mark">THE AUCTION CYCLE</span></div>
-      <div className="landing-process-heading"><h2 id="process-title">Your price.<br /><span>The market’s moment.</span></h2><p>No chasing the next tick.<br />Place your limit within a shared auction window.</p></div>
+      <div className="landing-process-heading">
+        <h2 id="process-title">Your price.<br /><span>The market’s moment.</span></h2>
+        <p><strong>For Investors:</strong> No chasing the next tick. Place your limit within a shared auction window.</p>
+        <p style={{ marginTop: '0.75rem', color: 'var(--color-text-secondary)' }}><strong>For Companies:</strong> The platform is fully multi-issuer. List your tokenized bond, enforce your own KYC compliance registry, and retain full permissionless control over your auction lifecycle.</p>
+      </div>
       <ol className="landing-steps">{steps.map((step, index) => <li key={step.title}><div className="landing-step-track"><span>0{index + 1}</span><ArrowRight /></div><h3>{step.title}</h3><p>{step.text}</p></li>)}</ol>
       <p className="landing-process-note">Orders are public and are not escrowed. Keep balances and approvals available until settlement. A limit order may fill partially or not at all.</p>
     </section>

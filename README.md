@@ -1,6 +1,6 @@
-# Clearing Bell
+# Clearing Bell: The Multi-Issuer Platform
 
-A wallet-connected batch-auction interface for tokenized securities. The React frontend and Solidity auction backend now live in this repository.
+A decentralized, wallet-connected batch-auction interface for tokenized securities. The platform allows multiple companies to independently launch and manage their own tokenized bonds, while the platform admin curates listings. The React frontend and Solidity auction backend now live in this repository.
 
 ## Run locally
 
@@ -20,6 +20,21 @@ npm run local:fresh
 ```
 
 Reload the browser after a fresh deployment. The local chain is ephemeral across Anvil restarts. Its process ID is stored in `contracts/local/anvil.pid` when this script starts it.
+
+## Multi-Issuer Registration Flow
+
+The platform supports multiple independent issuers. Here is the lifecycle for a company looking to launch an auction:
+
+### Backend Admin Setup (One-Time)
+These steps are currently handled via backend administrative scripts (e.g., `scripts/deploy-stack.ts`) to ensure secure platform curation:
+1. **Get Whitelisted (Platform Admin):** The platform admin calls `AuctionEngine.registerBondIssuer(bondToken, companyWallet)` to authorize the company.
+2. **Connect Compliance (Company):** The company links their ATS identity registry by calling `ComplianceGate.registerRegistry(bondToken, identityRegistry)`.
+3. **Configure Bond (Company):** The company registers their auction engine and settlement token via `BondConfig.configure()`.
+
+### Frontend Issuer Dashboard (Daily Operations)
+Once the backend setup is complete, the company uses the frontend `/issuer` dashboard to run their auctions:
+4. **Open a Round:** The company clicks "Open a round" to start a live auction for their bond.
+5. **Close and Clear:** When the timer expires, the company clicks "Close Round" to automatically calculate the uniform clearing price and atomically settle all trades.
 
 ## Try the connected flow
 
