@@ -5,18 +5,19 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ClearingLib} from "./ClearingLib.sol";
 import {ComplianceGate} from "./ComplianceGate.sol";
 
 /// @title AuctionEngine
-/// @notice Orchestrates periodic sealed-bid batch auction rounds for a compliant bond token.
+/// @notice Orchestrates periodic open-order batch auction rounds for a compliant bond token.
 ///
 /// @dev Flow per round:
 ///      1. Issuer calls openRound() to start a new auction.
 ///      2. KYC'd bidders call submitBid() during the open window.
 ///      3. Anyone (or the issuer) calls closeAndClear() after the window ends.
 ///      4. ClearingLib computes the uniform clearing price.
-///      5. settle() runs atomically: bond tokens and stablecoin swap hands.
+///      5. Settlement runs atomically inside closeAndClear: both tokens swap hands.
 ///
 /// MVP note: This implementation uses open (non-commit-reveal) bidding.
 /// Commit-reveal is the production hardening step documented in the README.
@@ -245,7 +246,9 @@ contract AuctionEngine is ReentrancyGuard, Pausable {
             revert RoundStillOpen(roundId);
         }
 
-        ClearingLib.Bid[] memory bids = _roundBids[roundId];
+        // Eligibility affects price discovery as well as delivery. Computing a
+        // price from subsequently excluded orders reports non-executable volume.
+        ClearingLib.Bid[] memory bids = _eligibleBids(round, _roundBids[roundId]);
         ClearingLib.ClearingResult memory result = ClearingLib.computeClearingPrice(bids);
 
         if (!result.hasCrossing) {
@@ -279,19 +282,18 @@ contract AuctionEngine is ReentrancyGuard, Pausable {
     {
         AuctionRound storage round = rounds[roundId];
 
-        // Reduce to the eligible bid set (drop revoked bidders), then match for a
-        // balanced fill where total buy quantity == total sell quantity.
-        ClearingLib.Bid[] memory filledBids = _matchEligibleBids(round, allBids, clearingPrice);
+        // The same eligible set determines both the price and the actual fills.
+        ClearingLib.Bid[] memory filledBids = ClearingLib.matchBids(allBids, clearingPrice);
 
         IERC20 bondToken = IERC20(round.bondToken);
         IERC20 settlementToken = IERC20(round.settlementToken);
+        uint256[] memory payments = _settlementPayments(filledBids, clearingPrice);
 
         // Collect phase: pull both legs into the engine.
         for (uint256 i = 0; i < filledBids.length; i++) {
             ClearingLib.Bid memory bid = filledBids[i];
-            uint256 settlementAmount = bid.quantity * clearingPrice / 1e18;
             if (bid.isBuy) {
-                settlementToken.safeTransferFrom(bid.bidder, address(this), settlementAmount);
+                settlementToken.safeTransferFrom(bid.bidder, address(this), payments[i]);
             } else {
                 bondToken.safeTransferFrom(bid.bidder, address(this), bid.quantity);
             }
@@ -300,11 +302,10 @@ contract AuctionEngine is ReentrancyGuard, Pausable {
         // Distribute phase: deliver both legs out of the engine.
         for (uint256 i = 0; i < filledBids.length; i++) {
             ClearingLib.Bid memory bid = filledBids[i];
-            uint256 settlementAmount = bid.quantity * clearingPrice / 1e18;
             if (bid.isBuy) {
                 bondToken.safeTransfer(bid.bidder, bid.quantity);
             } else {
-                settlementToken.safeTransfer(bid.bidder, settlementAmount);
+                settlementToken.safeTransfer(bid.bidder, payments[i]);
             }
 
             emit Settled(roundId, bid.bidder, bid.quantity, clearingPrice, bid.isBuy);
@@ -313,14 +314,41 @@ contract AuctionEngine is ReentrancyGuard, Pausable {
         round.phase = Phase.Closed;
     }
 
-    /// @dev Filters `allBids` to only KYC-eligible bidders, then matches the subset.
-    ///      Matching on the eligible subset guarantees the buy and sell fill totals are
-    ///      equal, so the collect/distribute phases always settle to zero net balance.
-    function _matchEligibleBids(
+    /// @dev Difference consecutive cumulative-floor quotes on each side. Since
+    ///      matched buy and sell quantities are equal, both cash totals equal
+    ///      floor(totalQuantity * price / 1e18), even for fractional quantities.
+    ///      Each payment is either floor or ceil of that order's exact quote;
+    ///      buyers should approve ceil(quantity * limitPrice / 1e18) per order.
+    function _settlementPayments(ClearingLib.Bid[] memory bids, uint256 price)
+        internal
+        pure
+        returns (uint256[] memory payments)
+    {
+        payments = new uint256[](bids.length);
+        uint256 buyQuantity;
+        uint256 sellQuantity;
+        uint256 buyQuote;
+        uint256 sellQuote;
+        for (uint256 i; i < bids.length; i++) {
+            if (bids[i].isBuy) {
+                buyQuantity += bids[i].quantity;
+                uint256 nextQuote = Math.mulDiv(buyQuantity, price, 1e18);
+                payments[i] = nextQuote - buyQuote;
+                buyQuote = nextQuote;
+            } else {
+                sellQuantity += bids[i].quantity;
+                uint256 nextQuote = Math.mulDiv(sellQuantity, price, 1e18);
+                payments[i] = nextQuote - sellQuote;
+                sellQuote = nextQuote;
+            }
+        }
+    }
+
+    /// @dev Filters before price discovery so reported volume and delivery agree.
+    function _eligibleBids(
         AuctionRound storage round,
-        ClearingLib.Bid[] memory allBids,
-        uint256 clearingPrice
-    ) internal view returns (ClearingLib.Bid[] memory filledBids) {
+        ClearingLib.Bid[] memory allBids
+    ) internal view returns (ClearingLib.Bid[] memory eligibleBids) {
         uint256 eligibleCount = 0;
         for (uint256 i = 0; i < allBids.length; i++) {
             if (complianceGate.isEligible(allBids[i].bidder, round.bondToken)) {
@@ -328,15 +356,13 @@ contract AuctionEngine is ReentrancyGuard, Pausable {
             }
         }
 
-        ClearingLib.Bid[] memory eligibleBids = new ClearingLib.Bid[](eligibleCount);
+        eligibleBids = new ClearingLib.Bid[](eligibleCount);
         uint256 idx = 0;
         for (uint256 i = 0; i < allBids.length; i++) {
             if (complianceGate.isEligible(allBids[i].bidder, round.bondToken)) {
                 eligibleBids[idx++] = allBids[i];
             }
         }
-
-        filledBids = ClearingLib.matchBids(eligibleBids, clearingPrice);
     }
 
     // =========================================================================
