@@ -33,6 +33,7 @@ Thumbs.db
 # .gas-snapshot
 
 PLAN.md
+!/plan.md
 
 # Generated local network configuration and ABI snapshots
 frontend/public/deployment.json
