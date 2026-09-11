@@ -10,6 +10,9 @@ export type DemoSessionValue = {
   account: Address | null
   walletChainId: number | null
   walletMode: 'injected' | 'local' | null
+  walletRestoring: boolean
+  walletStatus: 'disconnected' | 'restoring' | 'connected' | 'unavailable'
+  walletError: string | null
   localAccounts: Address[]
   rounds: LiveRound[]
   selectedRound: LiveRound | null
@@ -37,6 +40,7 @@ export type DemoSessionValue = {
   updateOrder: (patch: Partial<DemoOrder>) => void
   setOrderSide: (side: OrderSide) => void
   connectWallet: () => Promise<void>
+  retryWalletConnection: () => Promise<void>
   switchNetwork: () => Promise<void>
   connectLocalAccount: (address?: Address) => Promise<void>
   disconnect: () => void

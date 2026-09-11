@@ -12,7 +12,8 @@ import { ViewLink } from './ViewLink'
 export function Shell({ view, onNavigate, children }: { view: View; onNavigate: (view: View) => void; children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const session = useDemoSession()
-  const { account, config, error, notice, pendingTx, walletChainId, identityDialogOpen } = session
+  const { account, config, error, notice, pendingTx, walletChainId, identityDialogOpen, walletRestoring, walletStatus } = session
+  const walletLabel = account ? shortAddress(account) : walletRestoring ? 'Restoring…' : walletStatus === 'unavailable' ? 'Reconnect wallet' : 'Connect wallet'
   const wrongChain = account && walletChainId !== config?.chainId
   const navigate = (next: View) => { onNavigate(next); setMenuOpen(false) }
   return <div className={`site-shell view-${view}`}>
@@ -24,7 +25,7 @@ export function Shell({ view, onNavigate, children }: { view: View; onNavigate: 
         {view === 'home' && <a href="#auction-process" onClick={() => setMenuOpen(false)}>How it works</a>}
       </nav>
       <div className="header-actions">
-        {view === 'home' ? <ViewLink className="header-primary" view="markets" onNavigate={navigate}>Launch app <ArrowUpRight /></ViewLink> : <button className="header-primary account" aria-label={account ? `Manage wallet ${shortAddress(account)}` : 'Connect wallet'} onClick={session.openIdentityDialog}><WalletCards /><span>{account ? shortAddress(account) : 'Connect wallet'}</span></button>}
+        {view === 'home' ? <ViewLink className="header-primary" view="markets" onNavigate={navigate}>Launch app <ArrowUpRight /></ViewLink> : <button className="header-primary account" aria-label={account ? `Manage wallet ${shortAddress(account)}` : walletRestoring ? 'Restoring wallet connection' : walletLabel} aria-busy={walletRestoring} disabled={walletRestoring && !account} onClick={session.openIdentityDialog}>{walletRestoring && !account ? <LoaderCircle aria-hidden="true" /> : <WalletCards aria-hidden="true" />}<span>{walletLabel}</span></button>}
         <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation" aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
       </div>
     </header>

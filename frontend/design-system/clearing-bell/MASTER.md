@@ -6,7 +6,7 @@ Updated 11 September 2026
 
 An institutional auction workspace with spatial character: carbon, graphite, silver and a restrained mint accent. Hedera is the intended network, not an endorsement. The connected deployment is always disclosed separately.
 
-Homepage: concise purpose → physical bond certificate/order depth → actual market snapshot → auction mechanics → product entry points → factual FAQ. Markets and operations are graph-first; 3D is optional and never replaces exact values. Portfolio retains its established light accounting surface.
+Homepage: concise purpose → spatial visual → actual market snapshot → auction mechanics → product entry points → factual FAQ. Markets and operations are graph-first; 3D is optional and never replaces exact values. Portfolio uses the same carbon/mint language, with large individual token balances and one compact activity section.
 
 ## Visual foundations
 
@@ -73,6 +73,24 @@ Default/hover/disabled/pending/error states are styled deliberately. Interactive
 - Tables: semantic headings and captions; horizontal scrolling inside the table wrapper, not the page.
 - Dialog: Escape, visible-control focus containment (including links and summary), restored focus and scroll lock. Do not reset focus on background refresh.
 - Real loading/error/empty states never insert demonstration data.
+
+## Component: Portfolio
+
+Replaces the previous light, three-table page. Reuses the existing session and AddressLink; accepts `onNavigate(view)` like the other workspace pages. Page styles use scoped `--pf-*` tokens and `pf-*` selectors so the landing and market layouts are unaffected.
+
+- The first row shows cash-token balance, bonds held and an open-order shortcut. Amounts are individual token quantities, not a combined dollar valuation. A selector appears only when more than one token of that kind is available.
+- Balance numbers are42–78px on desktop and44–62px on mobile; supporting labels are subordinate. Exact string/BigInt formatting preserves large integers; rounded displays carry an approximation mark and tiny balances never become a false zero.
+- One activity area switches between open orders and settlements, initially showing orders when present. The first five records appear by default; Show all and CSV export retain access to additional records.
+- Token addresses, exact balances and engine allowances live in a collapsed native details disclosure. Exact values remain available on touch and keyboard, not only in titles.
+- No portfolio-value, yield, P&L, price-change chart or fabricated historical trend. History limits and non-escrow order obligations remain visible where relevant.
+- States: disconnected invitation, restoring/reading status, connected data, empty activity, partial-history error and unavailable balances. Account changes reset account-specific presentation state; no previous account balance is displayed as the new account's balance.
+- Native buttons and disclosures,44px actions, visible mint focus, table captions/headers, internally scrolling wide tables and no page-level horizontal overflow. Reduced motion disables loading animation.
+
+## Wallet continuity
+
+Remember only a public address and connection mode in browser storage, scoped to the configured deployment. Silently recheck browser authorization with `eth_accounts` and `eth_chainId`; local test accounts additionally require development mode, loopback RPC, chain31337 and an actually unlocked account.
+
+Never request permissions, switch networks or sign on startup. A temporary provider outage clears active account data but retains reconnect intent. Explicit Disconnect clears that intent and cancels pending connection attempts. Header and Portfolio expose restoration/unavailable states without showing an invented connection. Wallet locking or revoked permission cannot be bypassed by a saved preference.
 
 ## SEO and AI-readable content
 

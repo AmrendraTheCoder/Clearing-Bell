@@ -16,7 +16,7 @@ function AccountGlyph({ role, label }: { role: string; label: string }) {
 
 export function WalletDialog() {
   const session = useDemoSession()
-  const { account, config, walletMode, walletChainId, identityDialogOpen, localAccounts, pendingTx, notice, error, eligibility, connectionStatus } = session
+  const { account, config, walletMode, walletChainId, identityDialogOpen, localAccounts, pendingTx, notice, error, eligibility, connectionStatus, walletError } = session
   const [busy, setBusy] = useState<string | null>(null)
   const [localError, setLocalError] = useState<string | null>(null)
   const [accountsOpen, setAccountsOpen] = useState(false)
@@ -26,7 +26,7 @@ export function WalletDialog() {
   const currentAccount = config?.accounts.find((entry) => entry.address.toLowerCase() === account?.toLowerCase())
   const accountRows = localAccounts.filter((address) => !config?.accounts.length || config.accounts.some((entry) => entry.address.toLowerCase() === address.toLowerCase()))
   const walletNotice = notice?.tone === 'danger' && /wallet|local connection|network switch/i.test(notice.title) ? notice : null
-  const failure = localError || walletNotice?.body || error
+  const failure = localError || walletNotice?.body || walletError || error
 
   const run = async (key: string, action: () => Promise<void>) => {
     if (locked) return
@@ -60,7 +60,7 @@ export function WalletDialog() {
       {busy === 'browser' ? <LoaderCircle className="wallet-sheet__spinner" aria-hidden="true" /> : <ArrowUpRight aria-hidden="true" />}
     </button>
 
-    {failure && <div className="wallet-sheet__error" role="alert"><CircleAlert aria-hidden="true" /><div><b>{walletNotice?.title || 'Connection unavailable'}</b><p>{failure}</p>{error && <button disabled={locked || session.refreshing} onClick={() => void run('retry', session.refresh)}><RefreshCw className={busy === 'retry' ? 'wallet-sheet__spinner' : undefined} aria-hidden="true" />{busy === 'retry' ? 'Retrying…' : 'Retry connection'}</button>}</div></div>}
+    {failure && <div className="wallet-sheet__error" role="alert"><CircleAlert aria-hidden="true" /><div><b>{walletNotice?.title || 'Connection unavailable'}</b><p>{failure}</p>{(error || walletError) && <button disabled={locked || session.refreshing || session.walletRestoring} onClick={() => void run('retry', walletError ? session.retryWalletConnection : session.refresh)}><RefreshCw className={busy === 'retry' ? 'wallet-sheet__spinner' : undefined} aria-hidden="true" />{busy === 'retry' ? 'Retrying…' : 'Retry connection'}</button>}</div></div>}
 
     {pendingTx && <div className="wallet-sheet__pending" role="status"><LoaderCircle className="wallet-sheet__spinner" aria-hidden="true" /><div><b>{pendingTx.label}</b><p>{pendingTx.stage === 'signature' ? 'Confirm the request in your wallet.' : 'Waiting for the network to confirm.'} Account changes are paused until this finishes.</p>{pendingTx.hash && <AddressLink value={pendingTx.hash} transaction />}</div></div>}
 
