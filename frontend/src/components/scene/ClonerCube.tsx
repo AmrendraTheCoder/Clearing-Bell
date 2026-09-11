@@ -1,16 +1,13 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Application } from '@splinetool/runtime'
 import { ImageIcon, Pause, Play, RotateCcw } from 'lucide-react'
+import CubePoster from './CubePoster'
 import './ClonerCube.css'
 
-export const CLONER_CUBE_SCENE = 'https://prod.spline.design/jR3l1Vsa26e0CTYN/scene.splinecode'
 const LOAD_TIMEOUT_MS = 25_000
 type LoadState = 'loading' | 'ready' | 'error'
 export type ClonerCubeProps = {
-  poster?: string
   className?: string
-  onLoad?: (application: Application) => void
 }
 
 class CubeBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
@@ -20,30 +17,27 @@ class CubeBoundary extends Component<{ children: ReactNode; onFailure: () => voi
   render() { return this.state.failed ? null : this.props.children }
 }
 
-function CubePoster({ poster }: Pick<ClonerCubeProps, 'poster'>) {
-  const [failedSource, setFailedSource] = useState<string | null>(null)
-  return <div className="cloner-cube-poster" aria-hidden="true">
-    {poster && failedSource !== poster ? <img src={poster} alt="" decoding="async" loading="eager" draggable={false} onError={() => setFailedSource(poster)} /> : <span className="cloner-cube-poster-label">Cloner Cube Binary</span>}
-  </div>
-}
-
-// A retry gets a fresh lazy component as well as a fresh Spline application.
-function CubeAttempt({ active, onLoaded, onFailure }: {
+// A failed WebGL context or chunk load is retried with a fresh renderer.
+function CubeAttempt({ active, resetKey, onLoaded, onFailure, onInteract }: {
   active: boolean
-  onLoaded: (application: Application) => void
+  resetKey: number
+  onLoaded: () => void
   onFailure: () => void
+  onInteract: () => void
 }) {
   const [Runtime] = useState(() => lazy(() => import('./ClonerCubeRuntime')))
-  return <CubeBoundary onFailure={onFailure}><Suspense fallback={null}><Runtime scene={CLONER_CUBE_SCENE} active={active} onLoaded={onLoaded} onFailure={onFailure} /></Suspense></CubeBoundary>
+  return <CubeBoundary onFailure={onFailure}><Suspense fallback={null}><Runtime active={active} resetKey={resetKey} onLoaded={onLoaded} onFailure={onFailure} onInteract={onInteract} /></Suspense></CubeBoundary>
 }
 
-function CubeExperience({ poster, visible, onStill, onLoad }: Pick<ClonerCubeProps, 'poster' | 'onLoad'> & { visible: boolean; onStill: () => void }) {
+function CubeExperience({ visible, onStill }: { visible: boolean; onStill: () => void }) {
   const [state, setState] = useState<LoadState>('loading')
   const [attempt, setAttempt] = useState(0)
   const [playing, setPlaying] = useState(true)
+  const [resetKey, setResetKey] = useState(0)
   const descriptionId = useId()
   const fail = useCallback(() => setState('error'), [])
-  const loaded = useCallback((application: Application) => { setState('ready'); onLoad?.(application) }, [onLoad])
+  const loaded = useCallback(() => setState('ready'), [])
+  const interacted = useCallback(() => setPlaying(false), [])
 
   useEffect(() => {
     if (state !== 'loading') return
@@ -54,16 +48,16 @@ function CubeExperience({ poster, visible, onStill, onLoad }: Pick<ClonerCubePro
   const retry = () => { setAttempt(current => current + 1); setState('loading'); setPlaying(true) }
   return <div className="cloner-cube-experience" data-state={state}>
     <div className="cloner-cube-stage" aria-busy={state === 'loading'}>
-      {state !== 'ready' && <CubePoster poster={poster} />}
-      {state !== 'error' && <div className={`cloner-cube-live${state === 'ready' ? ' is-ready' : ''}`} aria-hidden="true"><CubeAttempt key={attempt} active={visible && playing} onLoaded={loaded} onFailure={fail} /></div>}
+      {state !== 'ready' && <div className="cloner-cube-poster" aria-hidden="true"><CubePoster /></div>}
+      {state !== 'error' && <div className={`cloner-cube-live${state === 'ready' ? ' is-ready' : ''}`} inert={state !== 'ready'}><CubeAttempt key={attempt} active={visible && playing} resetKey={resetKey} onLoaded={loaded} onFailure={fail} onInteract={interacted} /></div>}
       {state === 'loading' && <div className="cloner-cube-message" role="status"><span className="cloner-cube-progress" aria-hidden="true" /><span>Loading sculpture</span></div>}
       {state === 'error' && <div className="cloner-cube-message cloner-cube-error" role="status"><p>3D couldn’t load.</p><span>The still image is available. You can retry when ready.</span><button type="button" className="cloner-cube-button" onClick={retry}><RotateCcw size={16} aria-hidden="true" />Retry 3D</button></div>}
     </div>
     <div className="cloner-cube-footer">
-      <p id={descriptionId}>{state === 'ready' ? 'Interactive sculpture' : state === 'loading' ? 'Cloner Cube Binary' : 'Still preview'}</p>
+      <p id={descriptionId}>{state === 'ready' ? 'Drag to explore' : state === 'loading' ? 'Modular cube' : 'Still preview'}</p>
       <div className="cloner-cube-controls">
         {state === 'ready' && <button type="button" className="cloner-cube-button" aria-label={playing ? 'Pause 3D sculpture' : 'Play 3D sculpture'} aria-describedby={descriptionId} onClick={() => setPlaying(current => !current)}>{playing ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}<span>{playing ? 'Pause' : 'Play'}</span></button>}
-        {state === 'ready' && <button type="button" className="cloner-cube-button" onClick={retry} aria-label="Reset sculpture view" title="Reset sculpture view"><RotateCcw size={16} aria-hidden="true" /></button>}
+        {state === 'ready' && <button type="button" className="cloner-cube-button" onClick={() => setResetKey(current => current + 1)} aria-label="Reset sculpture view" title="Reset sculpture view"><RotateCcw size={16} aria-hidden="true" /></button>}
         <button type="button" className="cloner-cube-button cloner-cube-still" onClick={onStill}><ImageIcon size={16} aria-hidden="true" /><span>Still image</span></button>
       </div>
     </div>
@@ -71,7 +65,7 @@ function CubeExperience({ poster, visible, onStill, onLoad }: Pick<ClonerCubePro
 }
 
 /** A decorative brand sculpture, deliberately separate from financial data. */
-export function ClonerCube({ poster, className = '', onLoad }: ClonerCubeProps) {
+export function ClonerCube({ className = '' }: ClonerCubeProps) {
   const host = useRef<HTMLElement>(null)
   const [entered, setEntered] = useState(() => typeof window !== 'undefined' && !('IntersectionObserver' in window))
   const [visible, setVisible] = useState(() => typeof window !== 'undefined' && !('IntersectionObserver' in window))
@@ -111,10 +105,10 @@ export function ClonerCube({ poster, className = '', onLoad }: ClonerCubeProps) 
 
   const eligible = !stillOnly && (optedIn || (!smallScreen && !reducedMotion))
   const activate = () => { setEntered(true); setStillOnly(false); setOptedIn(true) }
-  return <figure ref={host} className={`cloner-cube ${className}`} aria-label="Cloner Cube Binary, a decorative Spline sculpture">
-    {eligible && entered ? <CubeExperience poster={poster} visible={visible && pageVisible} onStill={() => setStillOnly(true)} onLoad={onLoad} /> : <div className="cloner-cube-preview" data-state="preview">
-      <div className="cloner-cube-stage"><CubePoster poster={poster} /></div>
-      <div className="cloner-cube-footer"><p>{reducedMotion ? 'Still preview · reduced motion' : 'Cloner Cube Binary'}</p><button type="button" className="cloner-cube-button" onClick={activate}><Play size={16} aria-hidden="true" />Activate 3D</button></div>
+  return <figure ref={host} className={`cloner-cube ${className}`} aria-label="Modular cube, a decorative white-and-teal sculpture">
+    {eligible && entered ? <CubeExperience visible={visible && pageVisible} onStill={() => setStillOnly(true)} /> : <div className="cloner-cube-preview" data-state="preview">
+      <div className="cloner-cube-stage"><div className="cloner-cube-poster" aria-hidden="true"><CubePoster /></div></div>
+      <div className="cloner-cube-footer"><p>{reducedMotion ? 'Still preview · reduced motion' : 'Modular cube'}</p><button type="button" className="cloner-cube-button" onClick={activate}><Play size={16} aria-hidden="true" />Activate 3D</button></div>
     </div>}
     <figcaption className="sr-only">A decorative white voxel cube with mint accents. It does not represent orders, prices or market activity.</figcaption>
   </figure>

@@ -45,7 +45,7 @@ export function Home({ onNavigate }: { onNavigate: (view: View) => void }) {
           <p className="landing-intro-note"><Check size={14} /> Public order book <span>·</span> Eligibility-aware settlement</p>
         </div>
         <div className="landing-cube-visual">
-          <ClonerCube poster="https://filespreview.spline.design/c1959a9c-abd8-40dd-b974-671e943e7dd5.jpg" />
+          <ClonerCube />
         </div>
       </div>
       <div className="landing-market-strip">

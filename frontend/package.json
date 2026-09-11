@@ -15,8 +15,6 @@
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@react-three/fiber": "^9.7.0",
-    "@splinetool/react-spline": "4.1.0",
-    "@splinetool/runtime": "2.0.46",
     "lucide-react": "latest",
     "motion": "^13.1.1",
     "react": "latest",

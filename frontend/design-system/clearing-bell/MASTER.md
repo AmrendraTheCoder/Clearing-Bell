@@ -1,6 +1,6 @@
 
 # Clearing Bell — Interface system
-Updated 11 September 2026
+Updated 12 September 2026
 
 ## Direction
 
@@ -54,11 +54,11 @@ Isometric, Front and2D controls. HTML totals remain readable outside WebGL. Redu
 
 ## Component: ClonerCube
 
-Home uses the actual Spline library scene **Cloner Cube Binary**, selected by the project owner. It replaces the homepage MarketDepth rendering only; operational pages keep their actual-data charts and optional spatial order book.
+Home uses an original local modular cube, replacing the former Spline embed with the project owner's approval. Operational pages keep their actual-data charts and optional spatial order book.
 
-The cube is an abstract brand sculpture, never labelled as a live protocol, market model or representation of submitted orders. Keep the adjacent headline, actions and three actual market numbers readable independently of the canvas. Use a continuous carbon background, white modular geometry and the source scene's teal accents.
+The cube is an abstract brand sculpture, never labelled as a live protocol, market model or representation of submitted orders. Keep the adjacent headline, actions and three actual market numbers readable independently of the canvas. Use a continuous carbon background, bevelled porcelain panels, stepped voxel details and sparse teal inserts.
 
-The editable copy and runtime export are recorded in `docs/3D-ASSETS.md`. The export uses responsive framing, WebGL2, compression, capped pixel ratio and slow turntable motion. Controls must allow pause; hidden/offscreen scenes must stop. Mobile and reduced-motion users start with a still preview and can explicitly activate3D. Loading failure must leave the website usable with a retry option.
+The shared deterministic geometry and its SVG still are recorded in `docs/3D-ASSETS.md`. Three instanced material groups reuse the existing lazy Three.js dependency; no remote scene or texture is required. Controls offer drag/arrow-key rotation, pause, reset and still view. Hidden/offscreen scenes stop, paused resizes redraw once, and mobile/reduced-motion users explicitly opt in from a still. Loading or WebGL failure leaves the website usable with a retry option. No Spline branding is hidden: its asset and SDK were replaced completely.
 
 ## Component: WalletDialog
 

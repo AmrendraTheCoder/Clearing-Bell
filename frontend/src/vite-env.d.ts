@@ -7,5 +7,4 @@ interface ImportMetaEnv {
   readonly VITE_DEPLOYMENT_BLOCK?: string
   readonly VITE_NETWORK_NAME?: string
   readonly VITE_EXPLORER_URL?: string
-  readonly VITE_SPLINE_SCENE_URL?: string
 }

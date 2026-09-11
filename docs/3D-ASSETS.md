@@ -1,24 +1,26 @@
-# Homepage cube
+# Homepage modular cube
 
-## Source and ownership
+## Original local geometry
 
-- Scene: **Cloner Cube Binary**, Spline's official example library.
-- Original: https://app.spline.design/file/c1959a9c-abd8-40dd-b974-671e943e7dd5
-- Official catalog: https://spline.design/examples
-- Editable project copy: https://app.spline.design/file/37541abd-b4e4-44f0-ab85-d908cfb732d9
-- Published runtime: https://prod.spline.design/jR3l1Vsa26e0CTYN/scene.splinecode
-- Source preview: https://filespreview.spline.design/c1959a9c-abd8-40dd-b974-671e943e7dd5.jpg
+- Model: `frontend/src/lib/modular-cube.ts`.
+- Still preview: `frontend/src/components/scene/CubePoster.tsx`.
+- Renderer: `frontend/src/components/scene/ClonerCubeRuntime.tsx`.
+- Loading, visibility and controls: `frontend/src/components/scene/ClonerCube.tsx`.
 
-The project owner selected this scene. It was duplicated through the signed-in Spline editor and exported through its Code Export interface. Spline's [3D Library documentation](https://docs.spline.design/designing-in-3-d/scenes/3d-library) permits commercial and non-commercial use of its library models. This is the official library original, not a separately licensed community upload. Do not remove or conceal Spline branding required by the export/account plan.
+The project owner approved replacing the previous Spline embed with an independently authored, watermark-free white-and-teal cube. The new model contains 406 deterministic cuboids: porcelain panels and terraces, teal inserts, and a recessed dark core. It uses no Spline export data, downloaded model, remote image or texture. The previous Spline asset was replaced, not modified to conceal its branding. No paid account changes were made.
 
-## Adaptations
+## Rendering and interaction
 
-Only the project copy was changed: carbon background `#0B0D11`, responsive Auto Zoom, WebGL2 renderer, compression enabled, mobile/desktop pixel ratio1x, and a slow animated turntable at0.35. The white/teal geometry and source object events remain intact. No paid features or subscription purchases were made.
+Three.js is already used by the market depth visualization. The cube reuses that lazy-loaded dependency, with one shared bevelled box geometry, three instanced material groups, directional lighting, and a pixel ratio capped at1.5. The orthographic camera preserves its framing across resizes. There is no additional model or texture network request.
+
+Slow rotation is optional. Drag or arrow keys rotate the sculpture and pause automatic motion; Home or Reset restores its original view. Pause keeps the current angle. Offscreen/hidden rendering stops; resizing a paused scene draws a single refreshed frame. Cleanup disposes geometries, materials, shadows and renderer resources.
+
+Mobile and reduced-motion preferences start with the local SVG still. Activate3D is explicit opt-in. The still uses the same geometry and camera projection as the live view. A failed chunk load or WebGL context shows that preview with Retry3D; neither failure blocks the website.
 
 The visual is decorative. All prices, order quantities and auction results continue to come from the connected contracts in separate HTML and chart components.
 
 ## Maintenance
 
-Edit the project copy, then use **Export → Code Export → Update Code Export** to republish changes to the existing URL. Test the new export on desktop and mobile before a release. A fresh Spline export may require a compatible runtime package version; a successful build alone does not verify rendering.
+Edit the shared geometry model to change both the sculpture and its still. Keep model bounds within the tested camera envelope. Run frontend tests, lint and production build, then visually verify live/still views, controls, desktop/mobile framing and paused resizing.
 
-The scene and preview currently depend on Spline's CDN. A failed scene load must show a usable fallback and retry; market navigation and wallet actions do not depend on3D. Self-hosting or removing required branding is not implemented by this integration.
+The Spline runtime packages and legacy optional Spline branch have been removed. The earlier Spline export and its required branding are no longer part of the frontend.
