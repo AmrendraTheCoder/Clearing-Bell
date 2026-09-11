@@ -52,6 +52,14 @@ Shared spatial rendering; `round` is actual LiveRound or null; `variant` is hero
 
 Isometric, Front and2D controls. HTML totals remain readable outside WebGL. Reduced motion defaults to2D, lazy loading occurs near viewport, rendering runs on demand, DPR capped1.5. Fallback shows actual order rows. No downloaded community assets or third-party texture dependencies.
 
+## Component: ClonerCube
+
+Home uses the actual Spline library scene **Cloner Cube Binary**, selected by the project owner. It replaces the homepage MarketDepth rendering only; operational pages keep their actual-data charts and optional spatial order book.
+
+The cube is an abstract brand sculpture, never labelled as a live protocol, market model or representation of submitted orders. Keep the adjacent headline, actions and three actual market numbers readable independently of the canvas. Use a continuous carbon background, white modular geometry and the source scene's teal accents.
+
+The editable copy and runtime export are recorded in `docs/3D-ASSETS.md`. The export uses responsive framing, WebGL2, compression, capped pixel ratio and slow turntable motion. Controls must allow pause; hidden/offscreen scenes must stop. Mobile and reduced-motion users start with a still preview and can explicitly activate3D. Loading failure must leave the website usable with a retry option.
+
 ## Component: WalletDialog
 
 No props; consumes the existing session. Reuses Dialog for accessible modal behavior and AddressLink for real identifiers.

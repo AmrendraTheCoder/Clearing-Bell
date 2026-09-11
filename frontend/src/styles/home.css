@@ -1,5 +1,5 @@
 
-/* Landing: architectural spacing, real market depth, one restrained accent. */
+/* Landing: architectural spacing, a modular sculpture, one restrained accent. */
 .landing-page { --landing-carbon: #0b0d11; --landing-mint: #bef4ce; --landing-line: #2a2e33; --landing-muted: #a5adb6; color: #f4f5f0; background: var(--landing-carbon); }
 .view-home .site-header { background: #0b0d11; }
 .view-home .header-primary { color: #102219; background: #bef4ce; border-color: #bef4ce; }
@@ -10,6 +10,7 @@
 .landing-hero { max-width: var(--content-max); margin: 0 auto; padding: 0 var(--section-gutter); }
 .landing-hero-main { display: grid; grid-template-columns: .94fr 1.06fr; align-items: center; min-height: 650px; gap: 28px; padding: 38px 0 36px; }
 .landing-intro { position: relative; z-index: 1; padding: 18px 0; }
+.landing-cube-visual { min-width: 0; align-self: stretch; display: grid; align-items: center; }
 .landing-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; color: #b9c2c8; font-family: var(--font-mono); font-size: 11px; letter-spacing: .055em; }
 .landing-hedera { display: grid; place-items: center; flex: 0 0 auto; width: 27px; height: 27px; border: 1px solid #646e73; border-radius: 50%; color: #ecf0ef; font-family: var(--font-body); font-size: 22px; line-height: 1; }
 .landing-intro h1 { font-size: clamp(48px, 5.25vw, 84px); font-weight: 440; line-height: 1.045; letter-spacing: -.058em; }

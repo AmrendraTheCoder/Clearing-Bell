@@ -2,7 +2,7 @@
 import { ArrowRight, ArrowUpRight, Check, Plus } from 'lucide-react'
 import { Brand } from '../components/Brand'
 import { ViewLink } from '../components/ViewLink'
-import { MarketDepth } from '../components/scene/MarketDepth'
+import { ClonerCube } from '../components/scene/ClonerCube'
 import { useDemoSession } from '../context/DemoSessionContext'
 import { homeOverview, homeQuestions } from '../content/seo'
 import type { View } from '../types'
@@ -44,12 +44,8 @@ export function Home({ onNavigate }: { onNavigate: (view: View) => void }) {
           </div>
           <p className="landing-intro-note"><Check size={14} /> Public order book <span>·</span> Eligibility-aware settlement</p>
         </div>
-        <div className="landing-visual">
-          <MarketDepth round={ready ? featured : null} variant="hero" />
-          <div className="landing-visual-footer">
-            <p><span className={ready && featured?.phase === 'open' ? 'landing-dot is-open' : 'landing-dot'} />{ready ? featured ? `Round ${featured.id} · ${featured.phase === 'open' ? 'Open for orders' : featured.phase === 'closed' ? 'Settled' : 'Ready to clear'}` : 'No auctions yet' : 'Connecting to the auction'}</p>
-            <ViewLink view="markets" onNavigate={onNavigate} aria-label="View auction markets"><ArrowUpRight /></ViewLink>
-          </div>
+        <div className="landing-cube-visual">
+          <ClonerCube poster="https://filespreview.spline.design/c1959a9c-abd8-40dd-b974-671e943e7dd5.jpg" />
         </div>
       </div>
       <div className="landing-market-strip">
