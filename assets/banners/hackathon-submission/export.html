@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Clearing Bell — PNG exporter</title>
+<style>@font-face{font-family:Plex;src:url('./fonts/ibm-plex-sans.woff2');font-weight:100 900}body{margin:32px;background:#0b0d11;color:#f1f4f3;font:18px Plex,sans-serif}button{padding:16px 24px;background:#bef4ce;border:0;font:inherit;cursor:pointer}canvas{display:block;max-width:960px;width:100%;margin:24px 0}a{display:block;color:#bef4ce;margin:16px 0}</style>
+<h1>Submission images</h1><button id="save" disabled>Save PNG files</button><p id="status">Loading artwork and typography…</p><div id="previews"></div>
+<script type="module">
+const loadImage=src=>new Promise((resolve,reject)=>{const i=new Image;i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
+const [art,logo]=await Promise.all([loadImage('./clearing-bell-sculpture.png'),loadImage('./logo.svg'),document.fonts.load('450 106.56px Plex'),document.fonts.load('500 49.92px Plex'),document.fonts.load('400 32.64px Plex')]);
+const output=[];
+function canvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+function mark(ctx,x,y,size){ctx.save();ctx.translate(x,y);ctx.scale(size/34,size/34);ctx.strokeStyle='#bef4ce';ctx.lineWidth=1.7;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke(new Path2D('M4 9.5 17 3l13 6.5-13 6.4L4 9.5Z M4 17l13 6.5L30 17 M4 24.4l13 6.5 13-6.5'));ctx.restore()}
+function cover(w,h){const c=canvas(w,h),ctx=c.getContext('2d');ctx.scale(w/1920,h/1080);ctx.drawImage(art,0,0,1920,1080);const g=ctx.createLinearGradient(0,0,1920,0);g.addColorStop(0,'rgba(11,13,17,.56)');g.addColorStop(.35,'rgba(11,13,17,.2)');g.addColorStop(.58,'rgba(11,13,17,0)');ctx.fillStyle=g;ctx.fillRect(0,0,1920,1080);
+mark(ctx,120,108,57.6);ctx.textBaseline='alphabetic';ctx.font='500 49.92px Plex';ctx.letterSpacing='-1.92px';ctx.fillStyle='#f1f4f3';ctx.fillText('clearing',200,151);const n=ctx.measureText('clearing').width;ctx.fillStyle='#bef4ce';ctx.fillText('/',211+n,151);ctx.fillStyle='#f1f4f3';ctx.fillText('bell',237+n,151);
+ctx.font='450 106.56px Plex';ctx.letterSpacing='-5.568px';ctx.fillStyle='#f1f4f3';ctx.fillText('One market.',120,413);ctx.fillText('One clearing',120,524);ctx.fillStyle='#bef4ce';ctx.fillText('price.',120,635);
+ctx.font='400 32.64px Plex';ctx.letterSpacing='0px';ctx.fillStyle='#c1c9cb';ctx.fillText('Batch auctions for',120,744);ctx.fillText('tokenized bonds.',120,793);
+ctx.strokeStyle='#525c6355';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(120,941);ctx.lineTo(1800,941);ctx.stroke();ctx.font='500 20.736px Plex';ctx.letterSpacing='2.304px';ctx.fillStyle='#bef4ce';ctx.fillText('BUILT FOR HEDERA',120,987);ctx.fillStyle='#b9c3c6';ctx.textAlign='right';ctx.fillText('CLEARING BELL',1800,987);return c}
+for(const size of [512,1024]){const c=canvas(size,size);c.getContext('2d').drawImage(logo,0,0,size,size);output.push([`clearing-bell-logo-${size}x${size}.png`,c]);}
+for(const [w,h] of [[1920,1080],[640,360]])output.push([`clearing-bell-cover-${w}x${h}.png`,cover(w,h)]);
+document.querySelector('#previews').append(output[0][1],output[2][1]);document.querySelector('#status').textContent='Ready: square logos and 16:9 covers.';const button=document.querySelector('#save');button.disabled=false;
+button.onclick=async()=>{button.disabled=true;try{for(const [name,c]of output){const response=await fetch('/save/'+name,{method:'POST',headers:{'Content-Type':'image/png'},body:await new Promise(r=>c.toBlob(r,'image/png'))});if(!response.ok)throw Error(name)}document.querySelector('#status').textContent='Saved all four PNG files successfully.'}catch(e){document.querySelector('#status').textContent=String(e)}finally{button.disabled=false}};
+</script></html>
