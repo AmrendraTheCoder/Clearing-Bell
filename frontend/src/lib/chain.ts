@@ -183,7 +183,7 @@ export async function readSnapshot(
   let historyError: string | null = null
   let historyFromBlock: string | null = null
   const newSettlements: Settlement[] = []
-  let nextFromBlock = head + 1n  // advance cursor to just past head
+  const nextFromBlock = head + 1n  // advance cursor to just past head
 
   if (account) {
     const deployedAt = BigInt(config.deploymentBlock)
